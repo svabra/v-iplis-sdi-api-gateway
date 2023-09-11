@@ -1,12 +1,10 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import FileResponse
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from datetime import datetime
-
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(docs_url=None)
 
@@ -14,6 +12,8 @@ origins = [
     #Angular app
     "http://localhost:4200",  
     "http://127.0.0.1:4200",
+    "http://localhost:4201",  
+    "http://127.0.0.1:4201",
     "http://localhost:8000",  
     "http://127.0.0.1:8000",  
 ]
@@ -61,8 +61,8 @@ async def get_recognized_ground_picture():
     }
     
     response = JSONResponse(content=content)    
-    #response.headers["labels"] = "classified"    
-    response.headers["labels"] = "public"    
+    response.headers["labels"] = "classified"    
+    # response.headers["labels"] = "public"    
     return response
 
 def custom_openapi():
@@ -72,7 +72,7 @@ def custom_openapi():
         title="IPLIS API",
         version="1.0.0",
         openapi_version="3.0.0",
-        description="To serve and protect.",
+        description="IPLIS Data Products",
         routes=app.routes,
         contact={
             "name": "Data Producer",
