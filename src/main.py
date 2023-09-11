@@ -1,11 +1,31 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from datetime import datetime
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(docs_url=None)
+
+origins = [
+    #Angular app
+    "http://localhost:4200",  
+    "http://127.0.0.1:4200",
+    "http://localhost:8000",  
+    "http://127.0.0.1:8000",  
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/docs", include_in_schema=False)
@@ -27,37 +47,23 @@ async def get_recognized_ground_picture():
     # This is a sample URL path, replace it with the actual path you want to return
     url_path = "https://upload.wikimedia.org/wikipedia/commons/e/e0/DesertStormMap_v2.svg"
     
-    lastUpdated = datetime.now()
+    lastUpdated = datetime.now().isoformat()
+
     dataOwner = "Philipo Meiero"
     contact = "rgp@operationX10.vtg.admin.com"
     
-    return {
+    content = {
         "url_path": url_path,
         "lastUpdated": lastUpdated,
         "dataOwner": dataOwner,
         "contact": contact,
         "frequencyOfUpdate": "1d"
     }
-
-# @app.get("/HostileForces/", response_model=RecognizedGroundPicture, 
-#          tags=["Hostile Forces"], 
-#          summary="Get Recognized Ground Picture", 
-#          description="This endpoint returns the recognized ground picture.")
-# async def get_recognized_ground_picture():
-#     # This is a sample URL path, replace it with the actual path you want to return
-#     url_path = "https://upload.wikimedia.org/wikipedia/commons/e/e0/DesertStormMap_v2.svg"
     
-#     lastUpdated = datetime.now()
-#     dataOwner = "Philipo Meiero"
-#     contact = "rgp@operationX10.vtg.admin.com"
-    
-#     return {
-#         "url_path": url_path,
-#         "lastUpdated": lastUpdated,
-#         "dataOwner": dataOwner,
-#         "contact": contact,
-#         "frequencyOfUpdate": "1d"
-#     }
+    response = JSONResponse(content=content)    
+    #response.headers["labels"] = "classified"    
+    response.headers["labels"] = "public"    
+    return response
 
 def custom_openapi():
     if app.openapi_schema:
